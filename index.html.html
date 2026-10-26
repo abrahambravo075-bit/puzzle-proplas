@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memorama Black Month | PROPLASA</title>
+    <!-- Tailwind CSS desde CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Canvas Confetti desde CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+        .card-inner {
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+        .card.matched {
+            animation: pulse-matched 0.6s ease-in-out forwards;
+        }
+        @keyframes pulse-matched {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+            100% { transform: scale(0.95); opacity: 0.85; }
+        }
+    </style>
+</head>
+<body class="bg-black text-white min-h-screen font-sans flex flex-col justify-between selection:bg-yellow-400 selection:text-black">
+
+    <!-- ENCABEZADO -->
+    <header class="bg-gradient-to-r from-black via-zinc-900 to-black border-b-2 border-yellow-400 p-4 shadow-2xl">
+        <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            
+            <!-- LOGO PROPLASA -->
+            <div class="flex items-center space-x-3">
+                <img src="logo.png" 
+                     alt="PROPLASA Logo" 
+                     class="h-12 w-auto object-contain bg-white/10 p-1 rounded border border-white/20"
+                     onerror="this.style.display='none'; document.getElementById('alt-logo').style.display='block';">
+                <div id="alt-logo" class="hidden text-left">
+                    <span class="text-xl font-black tracking-widest text-white block">PROPLASA</span>
+                    <span class="text-xs text-yellow-400 font-bold tracking-wider">AMERICA CENTRAL</span>
+                </div>
+            </div>
+
+            <!-- INSIGNIA Y TÍTULO -->
+            <div class="text-center sm:text-right">
+                <span class="inline-block bg-blue-900 text-white text-xs px-3 py-1 rounded-full uppercase font-bold tracking-wider mb-1 border border-blue-400">
+                    Contenido Exclusivo PROPLASA
+                </span>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-yellow-400 tracking-tight">
+                    BLACK MONTH <span class="text-white text-lg block sm:inline font-normal">| Rebajas de Temporada</span>
+                </h1>
+            </div>
+        </div>
+    </header>
+
+    <!-- TABLERO DEL JUEGO -->
+    <main class="max-w-4xl mx-auto px-4 py-6 flex-grow flex flex-col items-center justify-center w-full">
+        
+        <!-- BARRA DE ESTADÍSTICAS -->
+        <div class="w-full max-w-2xl bg-zinc-900 border border-zinc-800 rounded-xl p-4 mb-6 flex justify-around items-center text-center shadow-lg">
+            <div>
+                <p class="text-zinc-400 text-xs font-semibold uppercase tracking-wider">Intentos</p>
+                <p id="moves-count" class="text-2xl font-black text-yellow-400">0</p>
+            </div>
+            <div class="h-8 w-px bg-zinc-800"></div>
+            <div>
+                <p class="text-zinc-400 text-xs font-semibold uppercase tracking-wider">Parejas Encontradas</p>
+                <p id="pairs-count" class="text-2xl font-black text-blue-400">0 / 8</p>
+            </div>
+            <div class="h-8 w-px bg-zinc-800"></div>
+            <div>
+                <button id="reset-btn" onclick="initGame()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-extrabold text-xs px-4 py-2 rounded-lg transition-all duration-200 uppercase tracking-wider shadow-md hover:shadow-yellow-400/20 active:scale-95">
+                    Reiniciar
+                </button>
+            </div>
+        </div>
+
+        <!-- REJILLA DE CARTAS (4x4) -->
+        <div id="game-grid" class="grid grid-cols-4 gap-3 sm:gap-4 w-full max-w-2xl aspect-square">
+            <!-- Las cartas se generan dinámicamente con JavaScript -->
+        </div>
+    </main>
+
+    <!-- PIE DE PÁGINA -->
+    <footer class="bg-zinc-950 border-t border-zinc-900 py-4 text-center text-xs text-zinc-500">
+        <p>© 2024 PROPLASA AMERICA CENTRAL — Promoción válida durante el Black Month.</p>
+    </footer>
+
+    <!-- MODAL DE VICTORIA -->
+    <div id="victory-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4 z-50">
+        <div class="bg-zinc-900 border-2 border-yellow-400 rounded-2xl p-6 sm:p-8 max-w-md w-full text-center shadow-2xl transform transition-all scale-95 opacity-0" id="modal-content">
+            
+            <div class="w-16 h-16 bg-yellow-400 text-black rounded-full flex items-center justify-center mx-auto mb-4 font-black text-2xl shadow-lg">
+                ★
+            </div>
+
+            <h2 class="text-2xl font-black text-yellow-400 mb-1">¡FELICITACIONES!</h2>
+            <p class="text-sm text-zinc-300 mb-4">Completaste el Memorama de <strong class="text-white">Black Month PROPLASA</strong></p>
+
+            <div class="bg-black border border-zinc-800 rounded-xl p-4 mb-6">
+                <p class="text-xs text-zinc-400 uppercase tracking-wider mb-1">Tu Premio Exclusivo</p>
+                <p class="text-2xl font-extrabold text-blue-400 tracking-wider my-1">15% DE DESCUENTO</p>
+                <p class="text-xs text-zinc-500">Usa el código en tu próxima compra:</p>
+                <div class="mt-2 bg-zinc-900 border border-dashed border-yellow-400/50 py-2 rounded text-yellow-400 font-mono font-bold tracking-widest text-lg select-all">
+                    PROPLASA-BLACK15
+                </div>
+            </div>
+
+            <p class="text-xs text-zinc-400 mb-6">
+                Completado en <span id="modal-moves" class="text-white font-bold">0</span> intentos.
+            </p>
+
+            <button onclick="initGame()" class="w-full bg-yellow-400 hover:bg-yellow-300 text-black font-extrabold py-3 rounded-xl transition-all uppercase tracking-wider shadow-lg hover:shadow-yellow-400/20 active:scale-95">
+                Jugar de Nuevo
+            </button>
+        </div>
+    </div>
+
+    <!-- CÓDIGO JAVASCRIPT -->
+    <script>
+        // Configuración de los productos (buscados en la misma carpeta)
+        const products = [
+            { id: 1, name: 'Refrigeradora', image: 'product1.png' },
+            { id: 2, name: 'Licuadora', image: 'product2.png' },
+            { id: 3, name: 'Cafetera', image: 'product3.png' },
+            { id: 4, name: 'Arrocera', image: 'product4.png' },
+            { id: 5, name: 'Microondas', image: 'product5.png' },
+            { id: 6, name: 'Estufa', image: 'product6.png' },
+            { id: 7, name: 'Lavadora', image: 'product7.png' },
+            { id: 8, name: 'Ventilador', image: 'product8.png' }
+        ];
+
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let moves = 0;
+        let isBoardLocked = false;
+
+        // Inicializar el Juego
+        function initGame() {
+            const grid = document.getElementById('game-grid');
+            grid.innerHTML = '';
+            flippedCards = [];
+            matchedPairs = 0;
+            moves = 0;
+            isBoardLocked = false;
+
+            document.getElementById('moves-count').textContent = '0';
+            document.getElementById('pairs-count').textContent = '0 / 8';
+
+            // Ocultar modal de victoria
+            const modal = document.getElementById('victory-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+
+            // Duplicar y mezclar tarjetas
+            cards = [...products, ...products]
+                .sort(() => Math.random() - 0.5)
+                .map((product, index) => ({ ...product, uniqueId: index }));
+
+            // Renderizar tarjetas
+            cards.forEach(card => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'card perspective-1000 w-full h-full cursor-pointer';
+                cardElement.dataset.id = card.uniqueId;
+                cardElement.dataset.productId = card.id;
+
+                cardElement.innerHTML = `
+                    <div class="card-inner relative w-full h-full transform-style-3d shadow-md rounded-xl">
+                        <!-- REVERSO DE LA CARTA -->
+                        <div class="card-front absolute inset-0 w-full h-full backface-hidden bg-zinc-900 border-2 border-yellow-400/50 rounded-xl flex items-center justify-center p-2 hover:border-yellow-400 transition-colors">
+                            <img src="card-back.png" 
+                                 alt="Black Month" 
+                                 class="w-full h-full object-contain"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                            <div class="hidden text-center">
+                                <span class="text-xs font-black text-yellow-400 block">BLACK</span>
+                                <span class="text-xs font-black text-white block">MONTH</span>
+                            </div>
+                        </div>
+                        <!-- FRENTE DE LA CARTA (PRODUCTO) -->
+                        <div class="card-back absolute inset-0 w-full h-full backface-hidden rotate-y-180 bg-white border-2 border-blue-500 rounded-xl flex flex-col items-center justify-center p-2 text-black">
+                            <img src="${card.image}" 
+                                 alt="${card.name}" 
+                                 class="w-full h-4/5 object-contain mb-1"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div class="hidden w-full h-4/5 items-center justify-center bg-zinc-100 rounded text-xs font-bold text-zinc-700 text-center">
+                                ${card.name}
+                            </div>
+                            <span class="text-[10px] font-extrabold text-zinc-600 uppercase tracking-tighter truncate w-full text-center">${card.name}</span>
+                        </div>
+                    </div>
+                `;
+
+                cardElement.addEventListener('click', () => handleCardClick(cardElement));
+                grid.appendChild(cardElement);
+            });
+        }
+
+        // Manejar el clic en una tarjeta
+        function handleCardClick(cardElement) {
+            if (isBoardLocked || cardElement.classList.contains('flipped') || cardElement.classList.contains('matched')) {
+                return;
+            }
+
+            cardElement.classList.add('flipped');
+            flippedCards.push(cardElement);
+
+            if (flippedCards.length === 2) {
+                moves++;
+                document.getElementById('moves-count').textContent = moves;
+                checkMatch();
+            }
+        }
+
+        // Verificar si hacen pareja
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+            const isMatch = card1.dataset.productId === card2.dataset.productId;
+
+            if (isMatch) {
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+                matchedPairs++;
+                document.getElementById('pairs-count').textContent = `${matchedPairs} / 8`;
+                flippedCards = [];
+
+                if (matchedPairs === 8) {
+                    setTimeout(showVictoryModal, 600);
+                }
+            } else {
+                isBoardLocked = true;
+                setTimeout(() => {
+                    card1.classList.remove('flipped');
+                    card2.classList.remove('flipped');
+                    flippedCards = [];
+                    isBoardLocked = false;
+                }, 1000);
+            }
+        }
+
+        // Mostrar Modal al ganar
+        function showVictoryModal() {
+            document.getElementById('modal-moves').textContent = moves;
+            const modal = document.getElementById('victory-modal');
+            const content = document.getElementById('modal-content');
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 50);
+
+            // Confeti de celebración
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#facc15', '#1d4ed8', '#ffffff']
+                });
+            }
+        }
+
+        // Iniciar al cargar la página
+        window.onload = initGame;
+    </script>
+</body>
+</html>
